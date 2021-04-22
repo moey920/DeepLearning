@@ -378,103 +378,190 @@ if __name__ == "__main__":
 
 
 - 1. 데이터셋 준비하기 : Epoch와 Batch
-Epoch: 한 번의 epoch는 전체 데이터셋에 대해 한 번 학습을 완료한 상태
-Batch: 나눠진 데이터셋 (보통 mini-batch라고 표현)
-iteration는 epoch를 나누어서 실행하는 횟수를 의미
-Batch size
-04
-Epoch와 Batch 예시
-Data set
-1 Epoch
-Ex) 총 데이터가 1000개, Batch size = 100
-• 1 iteration = 100개 데이터에 대해서 학습
-• 1 epoch = 100/Batch size = 10 iteration
-텐서플로우로 딥러닝 모델 구현하기
-04
-Example
-data = np.random.sample((100,2))
-labels = np.random.sample((100,1))
-# numpy array로부터 데이터셋 생성
-dataset = tf.data.Dataset.from_tensor_slices((data, labels))
-dataset = dataset.batch(32)
-Dataset API를 사용하여 딥러닝 모델용 데이터셋을 생성
-데이터셋 준비하기 코드 예시
-텐서플로우로 딥러닝 모델 구현하기
-04 텐서플로우로 딥러닝 모델 구현하기
-2. 딥러닝 모델 구축하기 : 고수준 API 활용
-텐서플로우의 패키지로 제공되는 고수준 API
-딥러닝 모델을 간단하고 빠르게 구현 가능
-04 텐서플로우로 딥러닝 모델 구현하기
-딥러닝 모델 구축을 위한 Keras 메소드(1)
-모델 클래스 객체 생성
-모델의 각 Layer 구성
-• units : 레이어 안의 Node의 수
-• activation : 적용할 activation 함수 설정
-tf.keras.models.Sequential()
-tf.keras.layers.Dense(units, activation)
-04 텐서플로우로 딥러닝 모델 구현하기
-Input Layer의 입력 형태 지정하기
-…
-Input Layer
-…
-1 Hidden Layer
-…
-N Hidden Layer Output Layer
-… …
-…
-첫 번째 즉, Input Layer는 입력 형태에 대한 정보를 필요로 함
-input_shape / input_dim 인자 설정하기
-04 텐서플로우로 딥러닝 모델 구현하기
-Example
-model = tf.keras.models.Sequential([
-tf.keras.layers.Dense(10, input_dim=2, activation=‘sigmoid’),
-tf.keras.layers.Dense(10, activation=‘sigmoid'),
-tf.keras.layers.Dense(1, activation='sigmoid'),
-])
-모델 구축하기 코드 예시(1)
-[model].add(tf.keras.layers.Dense(units, activation))
-04 텐서플로우로 딥러닝 모델 구현하기
-딥러닝 모델 구축을 위한 Keras 메소드(2)
-모델에 Layer 추가하기
-• units : 레이어 안의 Node의 수
-• activation : 적용할 activation 함수 설정
-04 텐서플로우로 딥러닝 모델 구현하기
-Example
-model = tf.keras.models.Sequential()
-model.add(tf.keras.layers.Dense(10, input_dim=2, activation=‘sigmoid’))
-model.add(tf.keras.layers.Dense(10, activation=‘sigmoid’))
-model.add(tf.keras.layers.Dense(1, activation='sigmoid’))
-모델 구축하기 코드 예시(2)
-04 텐서플로우로 딥러닝 모델 구현하기
-3. 딥러닝 모델 학습시키기 : Keras 메소드
-모델 학습 방식을 설정하기 위한 함수
-[model].compile(optimizer, loss)
-• optimizer : 모델 학습 최적화 방법
-• loss : 손실 함수 설정
-모델을 학습시키기 위한 함수
-[model].fit(x, y)
-• x : 학습 데이터
-• y : 학습 데이터의 label
-04 텐서플로우로 딥러닝 모델 구현하기
-Example
-model.compile(loss='mean_squared_error’, optimizer=‘SGD')
-model.fit(dataset, epochs=100)
-딥러닝 모델 학습시키기 코드 예시
-04 텐서플로우로 딥러닝 모델 구현하기
-4. 평가 및 예측하기 : Keras 메소드
-모델을 평가하기 위한 메소드
-[model].evaluate(x, y)
-• x : 테스트 데이터
-• y : 테스트 데이터의 label
-모델로 예측을 수행하기 위한 함수
-[model].predict(x)
-• x : 예측하고자 하는 데이터
-04 텐서플로우로 딥러닝 모델 구현하기
-Example
-# 테스트 데이터 준비하기
-dataset_test = tf.data.Dataset.from_tensor_slices((data_test, labels_test))
-dataset_test = dataset.batch(32)
-# 모델 평가 및 예측하기
-model.evaluate(dataset_test)
-predicted_labels_test = model.predict(data_test)
+    - Epoch: 한 번의 epoch는 전체 데이터셋에 대해 한 번 학습을 완료한 상태
+    - Batch: 나눠진 데이터셋 (보통 mini-batch라고 표현)
+        - 예를 들어 데이터셋에 600개의 데이터가 있으면, 배치를 100, Epoch를 10으로 하면 100*6을 총 10번 반복해서 학습 시킨다.
+    - iteration는 epoch를 나누어서 실행하는 횟수를 의미
+    - Ex) 총 데이터가 1000개, Batch size = 100
+        - 1 iteration = 100개 데이터에 대해서 학습
+        - 1 epoch = 100/Batch size = 10 iteration
 
+    - Dataset API를 사용하여 딥러닝 모델용 데이터셋을 생성 예시
+    ```
+    data = np.random.sample((100,2))
+    labels = np.random.sample((100,1))
+    # numpy array로부터 데이터셋 생성
+    dataset = tf.data.Dataset.from_tensor_slices((data, labels))
+    dataset = dataset.batch(32)
+    ```
+
+- 2. 딥러닝 모델 구축하기 : 고수준 API 활용
+    - KERAS : 텐서플로우의 패키지로 제공되는 고수준 API 딥러닝 모델을 간단하고 빠르게 구현 가능
+    - 딥러닝 모델 구축을 위한 Keras 메소드(1)
+        - 모델 클래스 객체 생성 `tf.keras.models.Sequential()`  
+        - 모델의 각 Layer 구성 `tf.keras.layers.Dense(units, activation)`
+            - units : 레이어 안의 Node의 수
+            - activation : 적용할 activation 함수 설정
+    - Input Layer의 입력 형태 지정하기
+        - 첫 번째 즉, Input Layer는 입력 형태에 대한 정보를 필요로 함
+        - input_shape / input_dim 인자 설정하기
+    - 모델 구축하기 코드 예시
+        ```
+        model = tf.keras.models.Sequential([ # 모델 객체 생성
+            tf.keras.layers.Dense(10, input_dim=2, activation=‘sigmoid’), # 입력층
+            tf.keras.layers.Dense(10, activation=‘sigmoid'), # 은닉층
+            tf.keras.layers.Dense(1, activation='sigmoid'), # 출력층
+        ])
+        ```
+    - 딥러닝 모델 구축을 위한 Keras 메소드(2)
+        - 모델에 Layer 추가하기 `[model].add(tf.keras.layers.Dense(units, activation))`  
+        ```
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Dense(10, input_dim=2, activation=‘sigmoid’))
+        model.add(tf.keras.layers.Dense(10, activation=‘sigmoid’))
+        model.add(tf.keras.layers.Dense(1, activation='sigmoid’))
+        ```
+
+- 3. 딥러닝 모델 학습시키기 : Keras 메소드
+    - 모델 학습 방식을 설정하기 위한 함수 `[model].compile(optimizer, loss)`
+        - optimizer : 모델 학습 최적화 방법
+        - loss : 손실 함수 설정
+    - 모델을 학습시키기 위한 함수 `[model].fit(x, y)`
+        - x : 학습 데이터
+        - y : 학습 데이터의 label
+        ```
+        model.compile(loss='mean_squared_error’, optimizer=‘SGD')
+        model.fit(dataset, epochs=100)
+        ```
+
+- 4. 평가 및 예측하기 : Keras 메소드
+    - 모델을 평가하기 위한 메소드 `[model].evaluate(x, y)`
+        - x : 테스트 데이터
+        - y : 테스트 데이터의 label
+    - 모델로 예측을 수행하기 위한 함수 `[model].predict(x)`
+        - x : 예측하고자 하는 데이터
+        ```
+        # 테스트 데이터 준비하기
+        dataset_test = tf.data.Dataset.from_tensor_slices((data_test, labels_test))
+        dataset_test = dataset.batch(32)
+        # 모델 평가 및 예측하기
+        model.evaluate(dataset_test)
+        predicted_labels_test = model.predict(data_test)
+        ```
+
+### 텐서플로우를 활용하여 선형 회귀 구현하기
+
+```
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import numpy as np
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+from elice_utils import EliceUtils
+elice_utils = EliceUtils()
+
+np.random.seed(100)
+
+'''
+1. 선형 회귀 모델의 클래스를 구현합니다.
+
+   Step01. 가중치 초기값을 1.5의 값을 가진 변수 텐서로 설정하세요.
+   
+   Step02. Bias 초기값을 1.5의 값을 가진 변수 텐서로 설정하세요.
+   
+   Step03. W, X, b를 사용해 선형 모델을 구현하세요.
+'''
+
+class LinearModel:
+    
+    def __init__(self):
+        
+        self.W = tf.Variable(1.5)
+        
+        self.b = tf.Variable(1.5)
+        
+    def __call__(self, X, Y):
+        
+        return tf.add(tf.multiply(X, self.W), self.b)
+
+'''
+2. MSE 값을 계산해 반환하는 손실 함수를 완성합니다. 
+'''
+
+def loss(y, pred):
+    
+    return tf.reduce_mean(tf.square(y - pred))
+
+'''
+3. gradient descent 방식으로 학습하는 train 함수입니다.
+   코드를 보면서 어떤 방식으로 W(가중치)와 b(Bias)이
+   업데이트 되는지 확인해 보세요.
+'''
+
+def train(linear_model, x, y):
+    
+    with tf.GradientTape() as t : # 연산에 대한 기록이 저장된다. backpropagation을 진행할 때 거꾸로 진행이 가능하게한다.
+        current_loss = loss(y, linear_model(x, y))
+    
+    # learning_rate 값 선언
+    learning_rate = 0.001
+    
+    # gradient 값 계산
+    delta_W, delta_b = t.gradient(current_loss, [linear_model.W, linear_model.b])
+    
+    # learning rate와 계산한 gradient 값을 이용하여 업데이트할 파라미터 변화 값 계산 
+    W_update = (learning_rate * delta_W)
+    b_update = (learning_rate * delta_b)
+    
+    return W_update,b_update
+ 
+def main():
+    
+    # 데이터 생성
+    x_data = np.linspace(0, 10, 50)
+    y_data = 4 * x_data + np.random.randn(*x_data.shape)*4 + 3
+    
+    # 데이터 출력
+    plt.scatter(x_data,y_data)
+    plt.savefig('data.png')
+    elice_utils.send_image('data.png')
+    
+    # 선형 함수 적용(인스턴스 생성)
+    linear_model = LinearModel()
+    
+    # epochs 값 선언
+    epochs = 100
+    
+    # epoch 값만큼 모델 학습
+    for epoch_count in range(epochs):
+        
+        # 선형 모델의 예측 값 저장
+        y_pred_data=linear_model(x_data, y_data)
+        
+        # 예측 값과 실제 데이터 값과의 loss 함수 값 저장
+        real_loss = loss(y_data, linear_model(x_data, y_data))
+        
+        # 현재의 선형 모델을 사용하여  loss 값을 줄이는 새로운 파라미터로 갱신할 파라미터 변화 값을 계산
+        update_W, update_b = train(linear_model, x_data, y_data)
+        
+        # 선형 모델의 가중치와 Bias를 업데이트합니다. 
+        linear_model.W.assign_sub(update_W)
+        linear_model.b.assign_sub(update_b)
+        
+        # 20번 마다 출력 (조건문 변경 가능)
+        if (epoch_count%20==0):
+            print(f"Epoch count {epoch_count}: Loss value: {real_loss.numpy()}")
+            print('W: {}, b: {}'.format(linear_model.W.numpy(), linear_model.b.numpy()))
+            
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(x_data,y_data)
+            ax1.plot(x_data,y_pred_data, color='red')
+            plt.savefig('prediction.png')
+            elice_utils.send_image('prediction.png')
+
+if __name__ == "__main__":
+    main()
+```
