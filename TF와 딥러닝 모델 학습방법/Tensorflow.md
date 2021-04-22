@@ -565,3 +565,197 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+### 텐서플로와 케라스를 활용하여 비선형회귀 구현하기
+
+```
+import tensorflow as tf
+import numpy as np
+from visual import *
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+np.random.seed(100)
+tf.random.set_seed(100)
+
+def main():
+    
+    # 비선형 데이터 생성
+    
+    x_data = np.linspace(0, 10, 100)
+    y_data = 1.5 * x_data**2 -12 * x_data + np.random.randn(*x_data.shape)*2 + 0.5
+    
+    '''
+    1. 다층 퍼셉트론 모델을 만듭니다.
+    '''
+    
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(20, input_dim = 1, activation = 'relu'),
+        tf.keras.layers.Dense(20, activation = 'relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    
+    '''
+    2. 모델 학습 방법을 설정합니다.
+    '''
+    
+    model.compile(loss = 'mean_squared_error', optimizer = 'adam')
+    
+    '''
+    3. 모델을 학습시킵니다.
+    ''' 
+    
+    history = model.fit(x_data, y_data, epochs = 500, verbose = 2)
+    
+    '''
+    4. 학습된 모델을 사용하여 예측값 생성 및 저장
+    '''
+    
+    predictions = model.predict(x_data)
+    
+    Visualize(x_data, y_data, predictions)
+    
+    return history, model
+
+if __name__ == '__main__':
+    main()
+```
+
+### 텐서플로와 케라스로 XOR 문제 해결하기
+
+```
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+def main():
+    
+    # XOR 문제를 위한 데이터 생성
+    
+    training_data = np.array([[0,0],[0,1],[1,0],[1,1]], "float32")
+    target_data = np.array([[0],[1],[1],[0]], "float32")
+    
+    '''
+    1. 다층 퍼셉트론 모델을 생성합니다.
+    '''
+    
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(16, input_dim=2, activation='relu'))
+    model.add(tf.keras.layers.Dense(32, activation='relu'))
+    model.add(tf.keras.layers.Dense(16, activation='relu'))
+    model.add(tf.keras.layers.Dense(8, activation='relu'))
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+    
+    '''
+    2. 모델의 손실 함수, 최적화 방법, 평가 방법을 설정합니다.
+    '''
+    
+    model.compile(loss = 'mse', optimizer = 'adam', metrics = ['binary_accuracy'])
+    
+    '''
+    3. 모델을 학습시킵니다. epochs를 자유롭게 설정해보세요.
+    ''' 
+    
+    hist = model.fit(training_data, target_data, epochs = 100, verbose = 2)
+    
+    score = hist.history['binary_accuracy'][-1]
+    
+    print('최종 정확도: ', score*100, '%')
+    
+    return hist
+
+if __name__ == "__main__":
+    main()
+```
+
+### Fashion-MNIST 데이터 분류하기
+
+Fashion-MNIST 데이터란 의류, 가방, 신발 등의 패션 이미지들의 데이터 셋으로 60,000개의 학습용 데이터 셋과 10,000개의 테스트 데이터 셋으로 이루어져 있습니다.
+
+각 이미지는 28x28 크기의 흑백 이미지로, 총 10개의 클래스로 분류되어 있습니다.
+
+이번 실습에서 사용하는 데이터는 모델 학습을 위해 28x28 크기의 다차원 데이터를 1차원 배열로 전처리한 데이터로, 60,000개의 학습 데이터 중 4,000개의 학습 데이터와 10,000개의 테스트 데이터 중 1,000개의 데이터를 랜덤으로 추출하였습니다.
+
+이러한 Fashion-MNIST 데이터를 각 이미지의 레이블에 맞게 분류하는 다층 퍼셉트론 모델을 생성해보고, Test 데이터에 대한 정확도, 즉 모델의 성능을 90% 이상으로 높여보도록 하겠습니다.
+
+```
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+import elice_utils
+elice_utils = elice_utils.EliceUtils()
+
+np.random.seed(100)
+tf.random.set_seed(100)
+
+'''
+1. 다층 퍼셉트론 분류 모델을 만들고, 학습 방법을 설정해 
+   학습시킨 모델을 반환하는 MLP 함수를 구현하세요.
+   
+   Step01. 다층 퍼셉트론 분류 모델을 생성합니다. 
+           여러 층의 레이어를 쌓아 모델을 구성해보세요.
+           
+   Step02. 모델의 손실 함수, 최적화 방법, 평가 방법을 설정합니다.
+   
+   Step03. 모델을 학습시킵니다. epochs를 자유롭게 설정해보세요.
+'''
+# 784
+def MLP(x_train, y_train):
+    
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(32, activation='relu'),
+        tf.keras.layers.Dense(10, activation='softmax')
+    ])
+    
+    model.compile(loss = 'sparse_categorical_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
+    
+    model.fit(x_train, y_train, epochs = 120, verbose = 2)
+    
+    return model
+
+def main():
+    
+    x_train = np.loadtxt('./data/train_images.csv', delimiter =',', dtype = np.float32)
+    y_train = np.loadtxt('./data/train_labels.csv', delimiter =',', dtype = np.float32)
+    x_test = np.loadtxt('./data/test_images.csv', delimiter =',', dtype = np.float32)
+    y_test = np.loadtxt('./data/test_labels.csv', delimiter =',', dtype = np.float32)
+    
+    # 이미지 데이터를 0~1범위의 값으로 바꾸어 줍니다.
+    x_train, x_test = x_train / 255.0, x_test / 255.0
+    
+    model = MLP(x_train,y_train)
+    
+    # 학습한 모델을 test 데이터를 활용하여 평가합니다.
+    loss, test_acc = model.evaluate(x_test, y_test, verbose=1)
+    
+    print('\nTEST 정확도 :', test_acc)
+    
+    # 임의의 3가지 test data의 이미지와 레이블값을 출력하고 예측된 레이블값 출력
+    predictions = model.predict(x_test)
+    rand_n = np.random.randint(100, size=3)
+    
+    for i in rand_n:
+        img = x_test[i].reshape(28,28)
+        plt.imshow(img,cmap="gray")
+        plt.show()
+        plt.savefig("test.png")
+        elice_utils.send_image("test.png")
+        
+        print("Label: ", y_test[i])
+        print("Prediction: ", np.argmax(predictions[i]))
+
+if __name__ == "__main__":
+    main()
+```
