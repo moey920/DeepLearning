@@ -356,6 +356,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import Perceptron
 
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier # 의사결정구조 모델
+from sklearn.ensemble import RandomForestClassifier # 앙상블 모델
+
+# 회귀 알고리즘 불러오기
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+
+# 스케일링 모듈
+from sklearn.preprocessing import MinMaxScaler
+
+# from keras.preprocessing import sequence
+# import tensorflow as tf
 
 from elice_utils import EliceUtils
 elice_utils = EliceUtils()
@@ -476,20 +488,46 @@ def main():
     '''
     
     # 데이터프레임을 이용해서 X, Y 정의하기
-    X = df_iris.loc[:, 'S_ratio':'P_ratio'] # 모든 행을 선택하고, 열 중에는 SL, SW, PL, PW를 선택한다, 어떤 feature를 이용해 분석할 것인지도 분석가의 몫이다.
+    # X = df_iris.loc[:, 'S_ratio':'P_ratio'] # 모든 행을 선택하고, 열 중에는 SL, SW, PL, PW를 선택한다, 어떤 feature를 이용해 분석할 것인지도 분석가의 몫이다.
+    # X = df_iris.loc[:, 'SL':'P_ratio']
+    X = df_iris.loc[:, 'SL':'PW']
     Y = df_iris.loc[:, 'Y'] # 모든 행을 선택하고 열은 Y를 선택한다
     
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, shuffle = True, random_state = 2021) # random_state도 학습률에 영향을 주는 파라미터이다.
+    scaler = MinMaxScaler() # input값을 0~1사이로 변환해주는 모듈
+    X_scaled = X.copy() # X df를 그대로 복사한다
+    X_scaled.loc[:, 'SL':'PW'] = scaler.fit_transform(X) # 변환된 값을 새로운 df에 삽입한다
+    # print(X_scaled.head())
+    # print(X_scaled.describe())
+    ''' 0~1 사이로 스케일링 되었다
+                   SL          SW          PL          PW
+    count  149.000000  149.000000  149.000000  149.000000
+    mean     0.428784    0.441555    0.465931    0.456096
+    std      0.230792    0.181809    0.299626    0.317759
+    min      0.000000    0.000000    0.000000    0.000000
+    25%      0.222222    0.333333    0.101695    0.083333
+    50%      0.416667    0.416667    0.559322    0.500000
+    75%      0.583333    0.541667    0.694915    0.708333
+    max      1.000000    1.000000    1.000000    1.000000
+    '''
     
+    '''
+    # 회귀문제로 만들어보기(꽃잎의 넓이 예측)
+    X = df_iris.loc[:, 'SL':'PW']
+    Y = df_iris.loc[:, 'PW']
+    '''
+    
+    # X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, shuffle = True, random_state = 2021) # random_state도 학습률에 영향을 주는 파라미터이다.
+    # 스케일링 된 값으로 학습해보기(딥러닝할 땐 무조건 스케일링 해야한다. 학습이 불안정해지지 않도록 하기 위함이다.)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_scaled, Y, test_size = 0.2, shuffle = True, random_state = 2021)
     # print(X_train.shape, Y_train.shape) # (119, 4) (119,)
     # print(X_test.shape, Y_test.shape) # (30, 4) (30,)
     
     # SVM 사용
     svc_model = SVC()
-    # 의사결정트리 사용
+    # 의사결정트리 분류기 사용
     dtc_model = DecisionTreeClassifier()
-    # 앙상블 - 랜덤포레스트 모델 사용
-    rfc_model = RandomForestClassifier()
+    # 앙상블 - 랜덤포레스트 분류기 사용
+    rfc_model = RandomForestClassifier(n_estimators = 100, max_depth = 3)
     
     svc_model.fit(X_train, Y_train)
     dtc_model.fit(X_train, Y_train)
@@ -503,35 +541,20 @@ def main():
     dtc_accuracy = accuracy_score(dtc_pred, Y_test)
     rfc_accuracy = accuracy_score(rfc_pred, Y_test)
     
-    print("SVC Test 데이터에 대한 정확도 : %0.5f" % svc_accuracy)
-    print("DecisionTreeClassifier Test 데이터에 대한 정확도 : %0.5f" % dtc_accuracy)
-    print("RandomForestClassifier Test 데이터에 대한 정확도 : %0.5f" % rfc_accuracy)
-
+    print("SVC : Test 데이터에 대한 정확도 : %0.5f" % svc_accuracy)
+    print("DecisionTreeClassifier : Test 데이터에 대한 정확도 : %0.5f" % dtc_accuracy)
+    print("RandomForestClassifier : Test 데이터에 대한 정확도 : %0.5f" % rfc_accuracy)
+    
+    '''
+    # 회귀문제 - 랜덤포레스트회귀 사용
+    rfr_model = RandomForestRegressor()
+    rfr_model.fit(X_train, Y_train)
+    rfr_pred = rfr_model.predict(X_test)
+    rfr_mse = mean_squared_error(rfr_pred, Y_test)
+    print("RandomForestRegressior : Test 데이터에 대한 평균제곱오차 : %0.5f" % rfr_mse)
+    '''
 
 if __name__ == "__main__":
     main()
-```
-
-
-```
-    '''
-    keras로 해결하기
-    '''
-#     perceptron = tf.keras.models.Sequential([
-#         tf.keras.layers.Dense(128, activation = 'relu'),
-#         tf.keras.layers.Dense(1, activation = 'sigmoid')
-#     ])
-    
-#     perceptron.compile(loss = 'binary_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
-    
-#     hist = perceptron.fit(X_train, Y_train, epochs = 20, batch_size = 500, verbose = 2, validation_data = (X_test, Y_test))
-    
-#     pred = perceptron.evaluate(X_test, Y_test)
-    
-#     accuracy = accuracy_score(pred, Y_test)
-    
-#     print("Test 데이터에 대한 정확도 : %0.5f" % accuracy)
-    
-#     return X_train, X_test, Y_train, Y_test, pred
 ```
 
