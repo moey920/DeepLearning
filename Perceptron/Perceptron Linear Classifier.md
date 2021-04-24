@@ -558,7 +558,7 @@ if __name__ == "__main__":
     main()
 ```
 
-### 딥러닝(케라스)를 이용해서 붓꽃 데이터 분류하기(3)
+### 딥러닝(케라스)를 이용해서 붓꽃 데이터 분류하기(3), 회귀분석하기
 
 ```
 import numpy as np
@@ -582,9 +582,6 @@ np.random.seed(100)
 
 def main():   
     
-    '''
-    numpy 배열을 pandas df로 변환하기
-    '''
     iris = load_iris()
     df_iris = pd.DataFrame(iris.data, columns = iris.feature_names)
     df_iris.columns = ['SL', 'SW', 'PL','PW']
@@ -620,6 +617,41 @@ def main():
     
     print("Test 데이터에 대한 정확도 : %0.5f" % accuracy)
     
+    '''
+    회귀모델로 바꾸어보기
+    '''
+    
+    iris = load_iris()
+    df_iris = pd.DataFrame(iris.data, columns = iris.feature_names)
+    df_iris.columns = ['SL', 'SW', 'PL','PW']
+    
+    df_iris['Y'] = iris.target
+    
+    df_iris = df_iris.drop_duplicates()
+    
+    X = df_iris.loc[:, 'SL':'PL']
+    Y = df_iris.loc[:, 'PW']
+    
+    scaler = MinMaxScaler()
+    X_scaled = X.copy()
+    X_scaled.loc[:, 'SL':'PL'] = scaler.fit_transform(X)
+    
+    # 스케일링 된 값으로 학습해보기
+    X_train, X_test, Y_train, Y_test = train_test_split(X_scaled, Y, test_size = 0.2, shuffle = True, random_state = 2021)
+    
+    model = Sequential([
+        Dense(128, input_dim = 3, activation = 'relu'), # 입력 차원은 (SL, SW, PL 3개)
+        Dense(64, activation = 'relu'),
+        Dense(1), # 최종 출력 유닛은 하나의 실수
+    ])
+    
+    model.compile(loss = 'mean_squared_error', optimizer = 'adam', metrics = ['mae']) # 회귀문제니까 mae를 쓴다.
+    
+    model.fit(X_train, Y_train, epochs = 20, batch_size = 5, validation_data = (X_test, Y_test), verbose = 0)
+    
+    loss, mae = model.evaluate(X_test, Y_test, verbose = 0)
+    
+    print("mae(예측값과 정답의 차이 제곱의 평균치) : %0.3f" % mae) # mae(error)는 낮을수록 좋다.
 
 if __name__ == "__main__":
     main()
