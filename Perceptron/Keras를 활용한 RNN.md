@@ -1,6 +1,7 @@
 # Keras를 활용한 RNN 모델 구현
 
-- 결과 :
+- 결과 : 유닛 개수와 input_dim, 은닉층 추가, dropout 추가, 각 RNN층 추가 등 다양한 방법으로 성능을 올릴 수 있다. 다만 gpu가 지원되는 코랩에서 진행하는게 좋을 것 같다.
+
 ```
 Test Accuracy_simple rnn:  0.77433336
 Test Accuracy_lstm:  0.7646667
