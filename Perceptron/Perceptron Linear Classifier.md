@@ -462,8 +462,21 @@ def main():
     Y   0.786971 -0.422987  0.949402  0.956514  1.000000
     '''
     
+    # Feature Engineering : 파생 변수 사용
+    df_iris['S_ratio'] = df_iris['SL'] / df_iris['SW']
+    df_iris['P_ratio'] = df_iris['PL'] / df_iris['PW']
+    # print(df_iris.head())
+    '''
+        SL   SW   PL   PW  Y   S_ratio  P_ratio
+    0  5.1  3.5  1.4  0.2  0  1.457143      7.0
+    1  4.9  3.0  1.4  0.2  0  1.633333      7.0
+    2  4.7  3.2  1.3  0.2  0  1.468750      6.5
+    3  4.6  3.1  1.5  0.2  0  1.483871      7.5
+    4  5.0  3.6  1.4  0.2  0  1.388889      7.0
+    '''
+    
     # 데이터프레임을 이용해서 X, Y 정의하기
-    X = df_iris.loc[:, 'SL':'PW'] # 모든 행을 선택하고, 열 중에는 SL, SW, PL, PW를 선택한다, 어떤 feature를 이용해 분석할 것인지도 분석가의 몫이다.
+    X = df_iris.loc[:, 'S_ratio':'P_ratio'] # 모든 행을 선택하고, 열 중에는 SL, SW, PL, PW를 선택한다, 어떤 feature를 이용해 분석할 것인지도 분석가의 몫이다.
     Y = df_iris.loc[:, 'Y'] # 모든 행을 선택하고 열은 Y를 선택한다
     
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, shuffle = True, random_state = 2021) # random_state도 학습률에 영향을 주는 파라미터이다.
@@ -471,17 +484,28 @@ def main():
     # print(X_train.shape, Y_train.shape) # (119, 4) (119,)
     # print(X_test.shape, Y_test.shape) # (30, 4) (30,)
     
-    # SVM 사용 : 현재 데이터에선 가장 성능이 좋다
-    # model = SVC()
+    # SVM 사용
+    svc_model = SVC()
     # 의사결정트리 사용
-    # model = DecisionTreeClassifier()
+    dtc_model = DecisionTreeClassifier()
     # 앙상블 - 랜덤포레스트 모델 사용
-    model = RandomForestClassifier()
-    model.fit(X_train, Y_train)
+    rfc_model = RandomForestClassifier()
     
-    pred = model.predict(X_test)
-    accuracy = accuracy_score(pred, Y_test)
-    print("Test 데이터에 대한 정확도 : %0.5f" % accuracy)
+    svc_model.fit(X_train, Y_train)
+    dtc_model.fit(X_train, Y_train)
+    rfc_model.fit(X_train, Y_train)
+    
+    svc_pred = svc_model.predict(X_test)
+    dtc_pred = dtc_model.predict(X_test)
+    rfc_pred = rfc_model.predict(X_test)
+    
+    svc_accuracy = accuracy_score(svc_pred, Y_test)
+    dtc_accuracy = accuracy_score(dtc_pred, Y_test)
+    rfc_accuracy = accuracy_score(rfc_pred, Y_test)
+    
+    print("SVC Test 데이터에 대한 정확도 : %0.5f" % svc_accuracy)
+    print("DecisionTreeClassifier Test 데이터에 대한 정확도 : %0.5f" % dtc_accuracy)
+    print("RandomForestClassifier Test 데이터에 대한 정확도 : %0.5f" % rfc_accuracy)
 
 
 if __name__ == "__main__":
