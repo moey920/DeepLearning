@@ -558,3 +558,70 @@ if __name__ == "__main__":
     main()
 ```
 
+### 딥러닝(케라스)를 이용해서 붓꽃 데이터 분류하기(3)
+
+```
+import numpy as np
+import pandas as pd
+
+# sklearn 모듈들
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+# 스케일링 모듈
+from sklearn.preprocessing import MinMaxScaler
+
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+
+from elice_utils import EliceUtils
+elice_utils = EliceUtils()
+
+np.random.seed(100)
+
+def main():   
+    
+    '''
+    numpy 배열을 pandas df로 변환하기
+    '''
+    iris = load_iris()
+    df_iris = pd.DataFrame(iris.data, columns = iris.feature_names)
+    df_iris.columns = ['SL', 'SW', 'PL','PW']
+    
+    # 예측해야하는 y값도 열에 추가하기
+    df_iris['Y'] = iris.target
+    
+    # 중복값 제거하기
+    df_iris = df_iris.drop_duplicates()
+    
+    # 데이터프레임을 이용해서 X, Y 정의하기
+    X = df_iris.loc[:, 'SL':'PW']
+    Y = df_iris.loc[:, 'Y'] # 모든 행을 선택하고 열은 Y를 선택한다
+    
+    scaler = MinMaxScaler() # input값을 0~1사이로 변환해주는 모듈
+    X_scaled = X.copy() # X df를 그대로 복사한다
+    X_scaled.loc[:, 'SL':'PW'] = scaler.fit_transform(X) # 변환된 값을 새로운 df에 삽입한다
+    
+    # 스케일링 된 값으로 학습해보기
+    X_train, X_test, Y_train, Y_test = train_test_split(X_scaled, Y, test_size = 0.2, shuffle = True, random_state = 2021)
+    
+    model = Sequential([
+        Dense(128, input_dim = 4, activation = 'relu'), # 입력 차원은 (SL, SW, PL, PW 4개)
+        Dense(64, activation = 'relu'),
+        Dense(3, activation = 'softmax'), # 최종 출력 유닛은 3 종류의 붓꽃
+    ])
+    
+    model.compile(loss = 'sparse_categorical_crossentropy', optimizer = 'adam', metrics = ['accuracy']) # 분류문제니까 accuracy를 쓴다.
+    
+    model.fit(X_train, Y_train, epochs = 20, batch_size = 5, validation_data = (X_test, Y_test), verbose = 0)
+    
+    loss, accuracy = model.evaluate(X_test, Y_test, verbose = 0)
+    
+    print("Test 데이터에 대한 정확도 : %0.5f" % accuracy)
+    
+
+if __name__ == "__main__":
+    main()
+```
+
