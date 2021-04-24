@@ -471,11 +471,12 @@ def main():
     # print(X_train.shape, Y_train.shape) # (119, 4) (119,)
     # print(X_test.shape, Y_test.shape) # (30, 4) (30,)
     
-    # SVM 사용
+    # SVM 사용 : 현재 데이터에선 가장 성능이 좋다
     # model = SVC()
-
     # 의사결정트리 사용
-    model = DecisionTreeClassifier()
+    # model = DecisionTreeClassifier()
+    # 앙상블 - 랜덤포레스트 모델 사용
+    model = RandomForestClassifier()
     model.fit(X_train, Y_train)
     
     pred = model.predict(X_test)
